@@ -1,4 +1,5 @@
 from hdfs import InsecureClient
+import numpy as np
 
 
 class HDFSDB(object):
@@ -20,3 +21,75 @@ class HDFSDB(object):
                     if len(line) < 2:
                         continue
                     call_back(line)
+
+    def read_line_2_id(self, path):
+        # 读取行到id的映射，id必须在行尾
+        # 特殊的，id为0表示缺失，id为1表示其他。hdfs文件中id是从1开始
+        line_2_id = {}
+
+        def _read_line_2_id(line):
+            tmp = line.split(',')
+            # hdfs里的id从1开始，这里的1却表示Other，应该从2开始，所以“int(tmp[-1]) + 1”
+            line_2_id["@".join(tmp[:-1])] = int(tmp[-1]) + 1
+        self.read_data(path, _read_line_2_id)
+        id_2_line = np.empty(len(line_2_id)+2, str)
+        id_2_line[0] = "None"
+        id_2_line[1] = "Other"
+        for s, id in line_2_id.items():
+            id_2_line[id] = s
+        return line_2_id, id_2_line
+
+    def read_i_2_i(self, path, ri_index=2, li_2_id=None, ri_2_id=None):
+        i2i_dict = {}
+
+        def _read_i_2_i(line):
+            tmp = line.split(',')
+            li = "@".join(tmp[:ri_index])
+            ri = "@".join(tmp[ri_index:-1])
+            w = float(tmp[-1])
+            if li_2_id is not None:
+                if li not in li_2_id:
+                    return
+                li = li_2_id[li]
+            if ri_2_id is not None:
+                if ri not in ri_2_id:
+                    return
+                ri = ri_2_id[ri]
+            if li not in i2i_dict:
+                i2i_dict[li] = {ri: w}
+            else:
+                i2i_dict[li][ri] = w
+        self.read_data(path, _read_i_2_i)
+        return i2i_dict
+
+    def read_user_act_list(self, path, call_back):
+        # 第一列是user_id，倒数第二列是channel，最后一列是timestamp
+        user_list = []
+        act_list = []
+        channel_list = []
+        timestamp_list = []
+
+        def _read_user_profile_db(line):
+            tmp = line.split(",")
+            user = tmp[0]
+            if len(user_list) > 0:
+                assert user >= user_list[-1]
+                if user > user_list[-1]:
+                    call_back(user_list[-1], act_list, channel_list, timestamp_list)
+                    act_list.clear()
+                    channel_list.clear()
+                    timestamp_list.clear()
+                    user_list.clear()
+                    user_list.append(user)
+                act_list.append("@".join(tmp[1:-2]))
+                channel_list.append(tmp[-2])
+                timestamp_list.append(int(tmp[-1]))
+        self.read_data(path, _read_user_profile_db)
+        call_back(user_list[-1], act_list, channel_list, timestamp_list)
+
+    def read_user_tag_list(self, path, call_back):
+        def _read_user_tag_list(line):
+            tmp = line.split(',')
+            tmp[-1] = tmp[-1].replace("\r", "")
+            call_back(tmp[0], tmp[1:])
+        self.read_data(path, _read_user_tag_list)
