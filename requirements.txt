@@ -1,0 +1,11 @@
+numpy>=1.11.1
+hdfs>=2.2.2
+python-dateutil>=2.5.3
+
+requests>=2.10.0
+
+# ipdb
+
+# addition
+# scipy
+# statsmodels
