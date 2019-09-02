@@ -32,7 +32,7 @@ class HDFSDB(object):
             # hdfs里的id从1开始，这里的1却表示Other，应该从2开始，所以“int(tmp[-1]) + 1”
             line_2_id["@".join(tmp[:-1])] = int(tmp[-1]) + 1
         self.read_data(path, _read_line_2_id)
-        id_2_line = np.empty(len(line_2_id)+2, str)
+        id_2_line = [''] * (len(line_2_id)+2)
         id_2_line[0] = "None"
         id_2_line[1] = "Other"
         for s, id in line_2_id.items():
@@ -81,9 +81,11 @@ class HDFSDB(object):
                     timestamp_list.clear()
                     user_list.clear()
                     user_list.append(user)
-                act_list.append("@".join(tmp[1:-2]))
-                channel_list.append(tmp[-2])
-                timestamp_list.append(int(tmp[-1]))
+            else:
+                user_list.append(user)
+            act_list.append("@".join(tmp[1:-2]))
+            channel_list.append(tmp[-2])
+            timestamp_list.append(int(tmp[-1]))
         self.read_data(path, _read_user_profile_db)
         call_back(user_list[-1], act_list, channel_list, timestamp_list)
 

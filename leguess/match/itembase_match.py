@@ -18,23 +18,25 @@ class ItemBaseMatch(BaseMatch):
         while True:
             try:
                 data_value_list = next(data_iter)
-                act_ids = data_value_list[0]
-                exclude_ids = data_value_list[1]
-                match_list = self._match_item(act_ids, exclude_ids, match_size)
-                # 召回
-                for i in range(len(match_list)):
-                    match_item_array[line_id][i] = match_list[i][0]
-                    match_percent_array[line_id][i] = match_list[i][1]
-                # 如果数量不足，补充排行榜
-                for i in range(len(match_list), match_size):
-                    match_item_array[line_id][i] = self.popular_rank[i-len(match_list)][0]
-                    match_percent_array[line_id][i] = self.popular_rank[i-len(match_list)][1] * self.popular_rank[len(match_list)-1]
-                line_id += 1
+                for act_ids, exclude_ids in zip(data_value_list[0], data_value_list[1]):
+                    match_list = self._match_item(act_ids, exclude_ids, match_size)
+                    # 召回
+                    last_p = 1.0
+                    for i in range(len(match_list)):
+                        match_item_array[line_id][i] = match_list[i][0]
+                        match_percent_array[line_id][i] = match_list[i][1]
+                        last_p = match_list[i][1]
+                    # 如果数量不足，补充排行榜
+                    for i in range(len(match_list), match_size):
+                        match_item_array[line_id][i] = self.popular_rank[i-len(match_list)][0]
+                        match_percent_array[line_id][i] = self.popular_rank[i-len(match_list)][1] * last_p
+                    line_id += 1
             except StopIteration as e:
                 break
         return match_item_array, match_percent_array
 
     def _match_item(self, act_ids, exclude_ids, match_size):
+        exclude_ids = set(exclude_ids)
         rank = dict()
         id = 0
         while len(rank) < match_size:
