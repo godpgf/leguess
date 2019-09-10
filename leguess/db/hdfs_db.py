@@ -28,7 +28,7 @@ class HDFSDB(object):
         line_2_id = {}
 
         def _read_line_2_id(line):
-            tmp = line.split(',')
+            tmp = line.split('\x01')
             # hdfs里的id从1开始，这里的1却表示Other，应该从2开始，所以“int(tmp[-1]) + 1”
             line_2_id["@".join(tmp[:-1])] = int(tmp[-1]) + 1
         self.read_data(path, _read_line_2_id)
@@ -43,7 +43,7 @@ class HDFSDB(object):
         i2i_dict = {}
 
         def _read_i_2_i(line):
-            tmp = line.split(',')
+            tmp = line.split('\x01')
             li = "@".join(tmp[:ri_index])
             ri = "@".join(tmp[ri_index:-1])
             w = float(tmp[-1])
@@ -70,7 +70,7 @@ class HDFSDB(object):
         timestamp_list = []
 
         def _read_user_profile_db(line):
-            tmp = line.split(",")
+            tmp = line.split("\x01")
             user = tmp[0]
             if len(user_list) > 0:
                 assert user >= user_list[-1]
@@ -91,7 +91,7 @@ class HDFSDB(object):
 
     def read_user_tag_list(self, path, call_back):
         def _read_user_tag_list(line):
-            tmp = line.split(',')
+            tmp = line.split('\x01')
             tmp[-1] = tmp[-1].replace("\r", "")
             call_back(tmp[0], tmp[1:])
         self.read_data(path, _read_user_tag_list)
