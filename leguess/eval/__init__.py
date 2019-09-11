@@ -2,12 +2,12 @@ from leguess.db import *
 from .hr import HR
 
 
-def eval_match(hdfs_db, act_list_path, tag_list_path, test_act_list_path, match_call_back, top_list, pred_act_type="download", pred_channel="default"):
+def eval_match(hdfs_db, act_list_path, tag_list_path, test_act_list_path, match_call_back, top_list, pred_act_type="download", pred_channel="default", exclude_act_type_list=["show"]):
     user_profile_db = MemoryUserProfileDB()
     # 读取用户的历史行为
     hdfs_db.read_user_act_list(act_list_path,
                                lambda user, act_list, channel_list, timestamp_list: user_profile_db.refresh_act_list(
-                                   user, act_list, channel_list, timestamp_list))
+                                   user, act_list, channel_list, timestamp_list), exclude_act_type_list=exclude_act_type_list)
     # 读取用户历史标签
     hdfs_db.read_user_tag_list(tag_list_path, lambda user, tag_list: user_profile_db.refresh_tag_list(user, tag_list))
 
