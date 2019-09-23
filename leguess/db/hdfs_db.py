@@ -62,7 +62,7 @@ class HDFSDB(object):
         self.read_data(path, _read_i_2_i)
         return i2i_dict
 
-    def read_user_act_list(self, path, call_back, exclude_act_type_list=None):
+    def read_user_act_list(self, path, call_back, exclude_act_type_list=None, user_filter=None):
         # 第一列是user_id，倒数第二列是channel，最后一列是timestamp
         user_list = []
         act_list = []
@@ -77,6 +77,8 @@ class HDFSDB(object):
                     if act.endswith(exclude_act_type):
                         return
             user = tmp[0]
+            if user_filter is not None and not user_filter(user):
+                return
             if len(user_list) > 0:
                 assert user >= user_list[-1]
                 if user > user_list[-1]:
