@@ -12,6 +12,7 @@ def merge_match(match_res_list):
     match_list = []
     id = 0
     while len(match_list) < match_size:
+        assert id <= len(match_list)
         for match_res in match_res_list:
             if match_res[id] not in match_set:
                 match_set.add(match_res[id])

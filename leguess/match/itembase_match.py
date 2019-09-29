@@ -26,10 +26,18 @@ class ItemBaseMatch(BaseMatch):
                     match_item_array[line_id][i] = match_list[i][0]
                     match_percent_array[line_id][i] = match_list[i][1]
                     last_p = match_list[i][1]
-                # 如果数量不足，补充排行榜
-                for i in range(len(match_list), match_size):
-                    match_item_array[line_id][i] = self.popular_rank[i - len(match_list)][0]
-                    match_percent_array[line_id][i] = self.popular_rank[i - len(match_list)][1] * last_p
+                # 如果数量不足，补充排行榜--------------------------
+                if len(match_list) < match_size:
+                    exclude_ids = set(list(exclude_ids) + match_list)
+                    id = len(match_list)
+                    pid = 0
+                    while id < match_size:
+                        if self.popular_rank[pid][0] in exclude_ids:
+                            pid+=1
+                            continue
+                        match_item_array[line_id][id] = self.popular_rank[pid][0]
+                        match_percent_array[line_id][id] = self.popular_rank[pid][1] * last_p
+                        id += 1
                 line_id += 1
             except StopIteration as e:
                 break
