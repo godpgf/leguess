@@ -1,4 +1,7 @@
 class UserProfileDB(object):
+    def __init__(self, act_filter=None):
+        self.act_filter = act_filter
+
     def get_act_list(self, user_id):
         # 返回行为序列，频道序列，时间序列
         return None, None, None
@@ -18,7 +21,8 @@ class UserProfileDB(object):
 
 
 class MemoryUserProfileDB(UserProfileDB):
-    def __init__(self):
+    def __init__(self, act_filter=None):
+        super(MemoryUserProfileDB, self).__init__(act_filter)
         self.user_act_dict = {}
         self.user_tag_dict = {}
 
@@ -32,6 +36,8 @@ class MemoryUserProfileDB(UserProfileDB):
         self.user_tag_dict[user_id] = tag_list
 
     def push_act(self, user_id, act_name, channel, timestamp):
+        if self.act_filter is not None and self.act_filter(self.user_act_dict.get(user_id, []), act_name):
+            return 
         if user_id not in self.user_act_dict:
             self.user_act_dict[user_id] = ([act_name], [channel], [timestamp])
         else:
