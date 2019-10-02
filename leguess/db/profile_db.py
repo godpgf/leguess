@@ -36,8 +36,8 @@ class MemoryUserProfileDB(UserProfileDB):
         self.user_tag_dict[user_id] = tag_list
 
     def push_act(self, user_id, act_name, channel, timestamp):
-        if self.act_filter is not None and self.act_filter(self.user_act_dict.get(user_id, []), act_name):
-            return 
+        if self.act_filter is not None and self.act_filter(self.user_act_dict.get(user_id, []), act_name) is False:
+            return
         if user_id not in self.user_act_dict:
             self.user_act_dict[user_id] = ([act_name], [channel], [timestamp])
         else:
@@ -46,7 +46,14 @@ class MemoryUserProfileDB(UserProfileDB):
             self.user_act_dict[user_id][2].append(timestamp)
 
     def refresh_act_list(self, user_id, act_list, channel_list, timestamp_list):
-        self.user_act_dict[user_id] = (act_list[:], channel_list[:], timestamp_list[:])
+        a_list, c_list, t_list = [], [], []
+        for a, c, t in zip(act_list, channel_list, timestamp_list):
+            if self.act_filter is not None and self.act_filter(a_list, a) is False:
+                continue
+            a_list.append(a)
+            c_list.append(c)
+            t_list.append(t)
+        self.user_act_dict[user_id] = (a_list, c_list, t_list)
 
 
 class RedisUserProfileDB(UserProfileDB):
