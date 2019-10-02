@@ -2,7 +2,7 @@ from leguess.db import *
 from .hr import HR
 
 
-def eval_match(hdfs_db, act_list_path, tag_list_path, test_act_list_path, match_call_back, top_list, pred_act_type="download", pred_channel="default", exclude_act_type_list=["show"]):
+def eval_match(hdfs_db, act_list_path, tag_list_path, test_act_list_path, match_call_back, top_list, pred_act_type="download", pred_channel="default", exclude_act_type_list=["show"], filter_item_set=None):
     user_profile_db = MemoryUserProfileDB()
     # 读取用户的历史行为
     hdfs_db.read_user_act_list(act_list_path,
@@ -17,10 +17,10 @@ def eval_match(hdfs_db, act_list_path, tag_list_path, test_act_list_path, match_
     def _eval_match(user, act_list, channel_list, timestamp_list):
         item_size = 0
         for act, channel in zip(act_list, channel_list):
-            if act.endswith(pred_act_type) and channel == pred_channel:
+            if act.endswith(pred_act_type) and channel == pred_channel and (filter_item_set is None or act.split("@")[0] in filter_item_set):
                 item_size += 1
         for act, channel, timestamp in zip(act_list, channel_list, timestamp_list):
-            if act.endswith(pred_act_type) and channel == pred_channel:
+            if act.endswith(pred_act_type) and channel == pred_channel and (filter_item_set is None or act.split("@")[0] in filter_item_set):
                 # 开始召回
                 act_list, channel_list, timestamp_list = user_profile_db.get_act_list(user)
                 tag_list = user_profile_db.get_tag_list(user)
@@ -29,3 +29,4 @@ def eval_match(hdfs_db, act_list_path, tag_list_path, test_act_list_path, match_
             user_profile_db.push_act(user, act, channel, timestamp)
     hdfs_db.read_user_act_list(test_act_list_path, _eval_match)
     hr.print_eval()
+
