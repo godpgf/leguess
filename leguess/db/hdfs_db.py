@@ -62,52 +62,58 @@ class HDFSDB(object):
         self.read_data(path, _read_i_2_i)
         return i2i_dict
 
-    def read_user_act_list(self, path, call_back, exclude_act_type_list=None, channel_filter=None, user_filter=None, delta_time=None):
+    def read_user_act_list(self, path, call_back, exclude_act_type_list=None, channel_filter=None, org_filter=None, user_filter=None, delta_time=None):
         # 如果一个用户两个行为之间的时间差距太大delta_time，将被切开
-        # 第一列是user_id，倒数第二列是channel，最后一列是timestamp
+        # 第一列是user_id，倒数第二列是org（产生发生行为页面的组织或算法），倒数第三列是channel（行为发生的页面），最后一列是timestamp
         user_list = []
         act_list = []
         channel_list = []
+        org_list = []
         timestamp_list = []
 
         def clean_all_list():
             act_list.clear()
             channel_list.clear()
+            org_list.clear()
             timestamp_list.clear()
 
         def _read_user_profile_db(line):
             tmp = line.split("\x01")
-            act = "@".join(tmp[1:-2])
+            act = "@".join(tmp[1:-3])
             if exclude_act_type_list is not None:
                 for exclude_act_type in exclude_act_type_list:
                     if act.endswith(exclude_act_type):
                         return
             user = tmp[0]
-            channel = tmp[-2]
+            channel = tmp[-3]
+            org = tmp[-2]
             timestamp = int(tmp[-1])
             if user_filter is not None and not user_filter(user):
                 return
             if channel_filter is not None and channel not in channel_filter:
                 return
+            if org_filter is not None and org not in org_filter:
+                return
             if len(user_list) > 0:
                 assert user >= user_list[-1]
                 if user > user_list[-1]:
-                    call_back(user_list[-1], act_list, channel_list, timestamp_list)
+                    call_back(user_list[-1], act_list, channel_list, org_list, timestamp_list)
                     clean_all_list()
                     user_list.clear()
                     user_list.append(user)
                 else:
                     assert timestamp >= timestamp_list[-1]
                     if delta_time is not None and timestamp - timestamp_list[-1] > delta_time:
-                        call_back(user_list[-1], act_list, channel_list, timestamp_list)
+                        call_back(user_list[-1], act_list, channel_list, org_list, timestamp_list)
                         clean_all_list()
             else:
                 user_list.append(user)
             act_list.append(act)
             channel_list.append(channel)
+            org_list.append(org)
             timestamp_list.append(timestamp)
         self.read_data(path, _read_user_profile_db)
-        call_back(user_list[-1], act_list, channel_list, timestamp_list)
+        call_back(user_list[-1], act_list, channel_list, org_list, timestamp_list)
 
     def read_user_tag_list(self, path, call_back):
         def _read_user_tag_list(line):
