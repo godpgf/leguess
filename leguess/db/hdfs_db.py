@@ -39,7 +39,7 @@ class HDFSDB(object):
             id_2_line[id] = s
         return line_2_id, id_2_line
 
-    def read_i_2_i(self, path, w_index, li_end_index=2, ri_end_index=3, li_2_id=None, ri_2_id=None):
+    def read_i_2_i(self, path, w_index, li_end_index=3, ri_end_index=4, li_2_id=None, ri_2_id=None):
         i2i_dict = {}
 
         def _read_i_2_i(line):
@@ -48,7 +48,7 @@ class HDFSDB(object):
             ri = "@".join(tmp[li_end_index:ri_end_index])
             w = float(tmp[w_index])
             if w <= 0:
-                return 
+                return
             if li_2_id is not None:
                 if li not in li_2_id:
                     return
