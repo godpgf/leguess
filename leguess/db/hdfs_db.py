@@ -81,10 +81,10 @@ class HDFSDB(object):
 
         def _read_user_profile_db(line):
             tmp = line.split("\x01")
-            act = "@".join(tmp[1:-3])
+            act = "@".join(tmp[1:-2])
             if exclude_act_type_list is not None:
                 for exclude_act_type in exclude_act_type_list:
-                    if act.endswith(exclude_act_type):
+                    if ("@".join(tmp[1:-3])).endswith(exclude_act_type):
                         return
             user = tmp[0]
             channel = tmp[-3]
