@@ -39,7 +39,7 @@ class HDFSDB(object):
             id_2_line[id] = s
         return line_2_id, id_2_line
 
-    def read_i_2_i(self, path, w_index, li_end_index=3, ri_end_index=4, li_2_id=None, ri_2_id=None):
+    def read_i_2_i(self, path, w_index, li_end_index=3, ri_end_index=4, li_2_id=None, ri_2_id=None, min_second_weight=0.3):
         i2i_dict = {}
 
         def _read_i_2_i(line):
@@ -62,7 +62,18 @@ class HDFSDB(object):
             else:
                 i2i_dict[li][ri] = w
         self.read_data(path, _read_i_2_i)
-        return i2i_dict
+        i2i_sort = {}
+        i2i = {}
+        for i, i_w in i2i_dict.items():
+            sort_list = sorted(i_w.items(), key=lambda c: c[1], reverse=True)
+            if len(sort_list) < 2 or sort_list[1][1] > min_second_weight:
+                i2i_sort[i] = sort_list
+            else:
+                i2i_sort[i] = [(sort_list[j][0], sort_list[j][1] / sort_list[1][1]) for j in range(1, len(sort_list))]
+                print(i, sort_list[0][0])
+            i2i[i] = dict(i2i_sort)
+            i2i[i]["sort"] = i2i_sort
+        return i2i
 
     def read_user_act_list(self, path, call_back, exclude_act_type_list=None, channel_filter=None, org_filter=None, user_filter=None, delta_time=None):
         # 如果一个用户两个行为之间的时间差距太大delta_time，将被切开
