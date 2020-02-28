@@ -23,7 +23,7 @@ def eval_recm(hdfs_db, user_profile_db, test_act_list_path, recm_call_back, top_
                 act_list, channel_list, org_list, timestamp_list = user_profile_db.get_act_list(user)
                 tag_list = user_profile_db.get_tag_list(user)
 
-                if len(act_list) == 0:
+                if act_list is None or len(act_list) == 0:
                     match_item, rank_percent = recm_call_back(user, act_list, channel_list, org_list, timestamp_list,
                                                               tag_list, timestamp, True)
                     default_match_hr.add_sample(match_item, act.split("@")[0], 1.0/item_size)
