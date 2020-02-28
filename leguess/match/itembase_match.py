@@ -6,7 +6,7 @@ class ItemBaseMatch(BaseMatch):
     def __init__(self, i2i_dict, popular_rank):
         self.i2i_dict = i2i_dict
         self.popular_rank = popular_rank
-        self.sort_dict = {i: sorted(i_w.items(), key=lambda c: c[1], reverse=True) for i, i_w in i2i_dict.items()}
+        # self.sort_dict = {i: sorted(i_w.items(), key=lambda c: c[1], reverse=True) for i, i_w in i2i_dict.items()}
 
     def match_item(self, data_source_factory, match_size):
         # 创建数据源，需要的数据名是行为序列id和排除序列id
@@ -51,11 +51,13 @@ class ItemBaseMatch(BaseMatch):
             # 正常推荐
             has_value = False
             for i in act_ids:
-                if i in self.sort_dict and id < len(self.sort_dict[i]):
-                    j, wj = self.sort_dict[i][id]
-                    if j not in exclude_ids:
-                        rank[j] = rank.get(j, 0) + wj
-                    has_value = True
+                if i in self.i2i_dict:
+                    sort_list = self.i2i_dict[i]["sort"]
+                    if id < len(sort_list):
+                        j, wj = sort_list[id]
+                        if j not in exclude_ids:
+                            rank[j] = rank.get(j, 0) + wj
+                        has_value = True
             if has_value is False:
                 break
             id += 1
