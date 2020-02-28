@@ -13,10 +13,10 @@ class UserProfileDB(object):
     def refresh_tag_list(self, user_id, tag_list):
         pass
 
-    def push_act(self, user_id, act_name, timestamp):
+    def push_act(self, user_id, act_name, channel, org, timestamp):
         pass
 
-    def refresh_act_list(self, user_id, act_list, channel_list, timestamp_list):
+    def refresh_act_list(self, user_id, act_list, channel_list, org_list, timestamp_list):
         pass
 
 
@@ -56,7 +56,8 @@ class MemoryUserProfileDB(UserProfileDB):
             c_list.append(c)
             o_list.append(o)
             t_list.append(t)
-        self.user_act_dict[user_id] = (a_list, c_list, o_list, t_list)
+        if len(a_list) > 0:
+            self.user_act_dict[user_id] = (a_list, c_list, o_list, t_list)
 
 
 class RedisUserProfileDB(UserProfileDB):
